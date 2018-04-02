@@ -11,7 +11,7 @@ class Server{
 };
 
 void Server::Server(const std::string &host_address, const int port) {
-  
+
 }
 
 std::uint64_t Server::open_account (std::string name, std::string password, std::uint16_t currency_type)  {
