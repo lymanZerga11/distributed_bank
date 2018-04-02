@@ -42,9 +42,8 @@ uint64_t ntohll(uint64_t value) {
     }
 }
 
-Message::Message () {
+Message::Message (uint64_t request_id) : request_id(request_id) {
   magic_number = DEFAULT_MAGIC_NUMBER;
-  request_id = DEFAULT_REQUEST_ID;
   request_type = DEFAULT_REQUEST_TYPE;
   account_number = DEFAULT_ACCOUNT_NUMBER;
   currency_type = DEFAULT_CURRENCY_TYPE;

@@ -25,12 +25,14 @@ public:
 
     int                 send(const char *msg, size_t size);
     int                 timed_recv(char *msg, size_t max_size, int max_wait_ms);
+    int                 get_bound_port () const
 
 private:
     int                 f_socket;
     int                 f_port;
     std::string         f_addr;
     struct addrinfo *   f_addrinfo;
+    struct sockaddr_in  my_addr;
 };
 
 #endif

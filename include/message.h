@@ -4,7 +4,7 @@
 #include <string>
 
 #define DEFAULT_MAGIC_NUMBER 12590
-#define VERSION 1
+#define VERSION 1.0
 #define PACKET_SIZE 512
 
 #define DEFAULT_NAME "0"
@@ -39,7 +39,7 @@ public:
     std::string name;  // max_length = 63 characters + null
     std::string password;  // max_length = 7 characters + null
 
-    Message                 ();
+    Message                 (uint64_t request_id);
     void serialize          (char*);
     void deserialize        (char*);
 };
