@@ -15,13 +15,14 @@
 #define DEFAULT_CURRENCY_TYPE 0
 #define DEFAULT_AMOUNT 0.00
 #define DEFAULT_ACCOUNT_BALANCE 0.00
-#define DEFAULT_IS_REPLY 0
-#define DEFAULT_SUCCESS 0
+#define DEFAULT_IS_REPLY 2
+#define DEFAULT_SUCCESS 2
 
 #define MAX_NAME_SIZE 64
 #define PASSWORD_SIZE 8
 
 enum client_requests {INVALID=0, OPEN_ACC, CLOSE_ACC, DEPOSIT, WITHDRAW, TAKE_LOAN, CHECK_BALANCE};
+enum currency_types {INVALID=0, SGD, USD, QAR};
 
 class Message {
 public:

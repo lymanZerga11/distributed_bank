@@ -1,29 +1,38 @@
 #include "bank_client.h"
+#include "message.h"
 
-void Client::Client(const std::string &host_address, const int port);
+void Client::Client(const std::string &host_address, const int port) : udp_client(host_address, port) {
+  client_id = IP_ADDRESS << 32 | PORT << 24;
+  // initialise log_level, timeout, request_semantic from config
+  // initialise error_stream
+  request_count = 0;
+}
 
-std::uint64_t Client::open_account (std::string name, std::string password, std::uint16_t currency_type) {
-  Message request_message (request_type=1);
+std::uint32_t Client::open_account (std::string name, std::string password, std::uint32_t currency_type) {
+  Message request_message;
+  request_message.request_type = OPEN_ACC;
   request_message.name = name;
   request_message.password = password;
   request_message.currency_type = currency_type;
 
-  std::uint64_t account_number =  0;
+  std::uint32_t account_number = DEFAULT_ACCOUNT_NUMBER;
   try:
-    account_number = get_response (request_message). account_number;
-  catch InvalidInputError:
+    account_number = get_response (request_message).account_number;
+  catch InvalidInputError, ServerSideError:
     std::error << "";
   return account_number;
   // udp_client will return result not error. catch. implement at-least and at-most in get_response()
+  // if DEFAULT, dont print in console
+  // serversideerror implement error string to print in case and default error string to "0"
 }
 
-bool Client::close_account (std::string name, std::uint64_t account_number, std::string password) {
-  Message request_message (request_type=2);
-  request_message.name = name;
-  request_message.account_number = password;
+std::uint32_t Client::close_account (std::string name, std::uint32_t account_number, std::string password) {
+  Message request_message;
+  request_message.request_type = CLOSE_ACC;
+  request_message.account_number = account_number;
   request_message.password = password;
 
-  bool success = false;
+  std::uint32_t success = DEFAULT_SUCCESS;
   try:
     success = get_response (request_message).success;
   catch InvalidInputError:
@@ -31,71 +40,70 @@ bool Client::close_account (std::string name, std::uint64_t account_number, std:
   return success;
 }
 
-std::uint64_t Client::deposit_money (std::string name, std::uint64_t account_number, std::string password,
-                                     std::uint16_t currency_type, std::uint64_t amount) {
-  Message request_message (request_type=3);
+double Client::deposit_money (std::string name, std::uint32_t account_number, std::string password,
+                                     std::uint32_t currency_type, float amount) {
+  Message request_message;
+  request_message.request_type = DEPOSIT;
   request_message.name = name;
-  request_message.account_number = password;
+  request_message.account_number = account_number;
   request_message.password = password;
   request_message.currency_type = currency_type;
   request_message.amount = amount;
 
-  std::uint64_t account_balance = 0;
+  double account_balance = DEFAULT_ACCOUNT_BALANCE;
   try:
    account_balance = get_response (request_message).account_balance;
-  catch InvalidInputError:
+  catch InvalidInputError, ServerSideError:
    std::error << "";
   return account_balance;
 }
 
-std::uint64_t Client::deposit_money (std::string name, std::uint64_t account_number, std::string password,
-                                     std::uint16_t currency_type, std::uint64_t amount) {
-  Message request_message (request_type=4);
+double Client::withdraw_money (std::string name, std::uint32_t account_number, std::string password,
+                                     std::uint32_t currency_type, float amount) {
+  Message request_message;
+  request_message.request_type = WITHDRAW;
   request_message.name = name;
-  request_message.account_number = password;
+  request_message.account_number = account_number;
   request_message.password = password;
   request_message.currency_type = currency_type;
   request_message.amount = amount;
 
-  std::uint64_t account_balance = 0;
+  double account_balance = DEFAULT_ACCOUNT_BALANCE;
   try:
    account_balance = get_response (request_message).account_balance;
-  catch InvalidInputError:
+  catch InvalidInputError, ServerSideError:
    std::error << "";
   return account_balance;
 }
 
-std::uint64_t Client::deposit_money (std::string name, std::uint64_t account_number, std::string password,
-                                     std::uint16_t currency_type, std::uint64_t amount, std::uint64_t recipient_account_number) {
-  Message request_message (request_type=4);
+uint32_t Client::take_loan (std::string name, std::uint32_t account_number, std::string password) {
+  Message request_message;
+  request_message.request_type = TAKE_LOAN;
   request_message.name = name;
-  request_message.account_number = password;
+  request_message.account_number = account_number;
   request_message.password = password;
-  request_message.currency_type = currency_type;
-  request_message.amount = amount;
-  request_message.recipient_account_number = recipient_account_number;
 
-  std::uint64_t account_balance = 0;
+  uint32_t success = DEFAULT_SUCCESS;
   try:
-   account_balance = get_response (request_message).account_balance;
-  catch InvalidInputError:
+   success = get_response (request_message).success;
+  catch InvalidInputError, ServerSideError:
    std::error << "";
-  return account_balance;
+  return success;
 }
 
-bool Client::change_password (std::string name, std::uint64_t account_number, std::string password, std::string new_password) {
-  Message request_message (request_type=2);
+double Client::check_balance (std::string name, std::uint32_t account_number, std::string password) {
+  Message request_message;
+  request_message.request_type = CHECK_BALANCE;
   request_message.name = name;
-  request_message.account_number = password;
+  request_message.account_number = account_number;
   request_message.password = password;
-  request_message.new_password = new_password;
 
-  bool success = false;
+  double account_balance = DEFAULT_ACCOUNT_BALANCE;
   try:
-    success = get_response (request_message).success;
+    account_balance = get_response (request_message).account_balance;
   catch InvalidInputError:
     std::error << "";
-  return success;
+  return account_balance;
 }
 
 bool Client::validate_request (const Message & request_message) {
@@ -131,4 +139,6 @@ Message Client::get_response (const Message & request_message) {
     raise ValidateRequestError;
 }
 
-void Client::kill_client();
+void Client::kill_client() {
+  
+}
