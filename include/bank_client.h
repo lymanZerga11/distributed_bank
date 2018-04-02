@@ -17,12 +17,12 @@ class Client{
 
 void Client::Client(const std::string &host_address, const int port);
 
-std::uint64_t Client::open_account    (std::string name, std::string password, std::uint16_t currency_type);
-bool Client::close_account            (std::string name, std::uint64_t account_number, std::string password);
-double Client::deposit_money          (std::string name, std::uint64_t account_number, std::string password, std::uint16_t currency_type, double amount);
-double Client::withdraw_money         (std::string name, std::uint64_t account_number, std::string password, std::uint16_t currency_type, double amount);
-bool Client::take_loan                (std::string name, std::uint64_t account_number, std::string password);
-double Client::check_balance          (std::string name, std::uint64_t account_number, std::string password);
+std::uint32_t Client::open_account    (std::string name, std::string password, std::uint32_t currency_type);
+bool Client::close_account            (std::string name, std::uint32_t account_number, std::string password);
+double Client::deposit_money          (std::string name, std::uint32_t account_number, std::string password, std::uint32_t currency_type, double amount);
+double Client::withdraw_money         (std::string name, std::uint32_t account_number, std::string password, std::uint32_t currency_type, double amount);
+bool Client::take_loan                (std::string name, std::uint32_t account_number, std::string password);
+double Client::check_balance          (std::string name, std::uint32_t account_number, std::string password);
 // bool Client::monitor                  (std::string name, std::string password);
 
 bool Client::validate_request         (const Message & request_message);

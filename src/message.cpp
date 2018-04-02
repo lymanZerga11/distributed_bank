@@ -18,6 +18,30 @@ float ntohf(float val) {
     return val;
 }
 
+uint64_t htonll(uint64_t value) {
+    static const int num = 42;
+    if (*reinterpret_cast<const char*>(&num) == num) {
+        const uint32_t high_part = htonl(static_cast<uint32_t>(value >> 32));
+        const uint32_t low_part = htonl(static_cast<uint32_t>(value & 0xFFFFFFFFLL));
+        return (static_cast<uint64_t>(low_part) << 32) | high_part;
+    }
+    else {
+        return value;
+    }
+}
+
+uint64_t ntohll(uint64_t value) {
+    static const int num = 42;
+    if (*reinterpret_cast<const char*>(&num) == num) {
+        const uint32_t high_part = ntohl(static_cast<uint32_t>(value >> 32));
+        const uint32_t low_part = ntohl(static_cast<uint32_t>(value & 0xFFFFFFFFLL));
+        return (static_cast<uint64_t>(low_part) << 32) | high_part;
+    }
+    else {
+        return value;
+    }
+}
+
 Message::Message () {
   magic_number = DEFAULT_MAGIC_NUMBER;
   request_id = DEFAULT_REQUEST_ID;
@@ -34,7 +58,7 @@ Message::Message () {
 
 void Message::serialize (char* buffer) {
   std::uint32_t _magic_number = htonl(magic_number);
-  std::uint32_t _request_id = htonl(request_id);
+  std::uint64_t _request_id = htonll(request_id);
   std::uint32_t _request_type = htonl(request_type);
   std::uint32_t _account_number = htonl(account_number);
   std::uint32_t _currency_type = htonl(currency_type);
@@ -50,12 +74,12 @@ void Message::serialize (char* buffer) {
   std::string _name = name; // max_length = 63 characters + null
   std::string _password = password; // // max_length = 7 characters + null
 
-  memset(buffer, 0, sizeof(std::uint32_t) * 9 + sizeof(float) * 2 + MAX_NAME_SIZE + PASSWORD_SIZE);
+  memset(buffer, 0, sizeof(std::uint32_t) * 8 + sizeof(std::uint64_t) * 1 + sizeof(float) * 2 + MAX_NAME_SIZE + PASSWORD_SIZE);
   std::uint32_t buffer_offset = 0;
   memcpy(buffer + buffer_offset, (void*)&_magic_number, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
-  memcpy(buffer + buffer_offset, (void*)&_request_id, sizeof(std::uint32_t));
-  buffer_offset += sizeof(std::uint32_t);
+  memcpy(buffer + buffer_offset, (void*)&_request_id, sizeof(std::uint64_t));
+  buffer_offset += sizeof(std::uint64_t);
   memcpy(buffer + buffer_offset, (void*)&_request_type, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
   memcpy(buffer + buffer_offset, (void*)&_account_number, sizeof(std::uint32_t));
@@ -82,7 +106,7 @@ void Message::serialize (char* buffer) {
 
 void Message::deserialize (char* buffer) {
   std::uint32_t _magic_number;
-  std::uint32_t _request_id;
+  std::uint64_t _request_id;
   std::uint32_t _request_type;
   std::uint32_t _account_number;
   std::uint32_t _currency_type;
@@ -102,8 +126,8 @@ void Message::deserialize (char* buffer) {
   std::uint32_t buffer_offset = 0;
   memcpy(&_magic_number, buffer + buffer_offset, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
-  memcpy(&_request_id, buffer + buffer_offset, sizeof(std::uint32_t));
-  buffer_offset += sizeof(std::uint32_t);
+  memcpy(&_request_id, buffer + buffer_offset, sizeof(std::uint64_t));
+  buffer_offset += sizeof(std::uint64_t);
   memcpy(&_request_type, buffer + buffer_offset, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
   memcpy(&_account_number, buffer + buffer_offset, sizeof(std::uint32_t));
@@ -128,7 +152,7 @@ void Message::deserialize (char* buffer) {
   buffer_offset += ntohl(_password_size);
 
   magic_number = ntohl(_magic_number);
-  request_id = ntohl(_request_id);
+  request_id = ntohll(_request_id);
   request_type = ntohl(_request_type);
   account_number = ntohl(_account_number);
   currency_type = ntohl(_currency_type);
