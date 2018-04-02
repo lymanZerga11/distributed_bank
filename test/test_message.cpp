@@ -27,4 +27,6 @@ int main () {
     std::cout << de_message.success << std::endl;
     std::cout << de_message.amount << std::endl;
     std::cout << de_message.account_balance << std::endl;
+
+    return 0;
 }
