@@ -44,4 +44,5 @@ public:
     void deserialize        (char*);
 };
 
+//add request semantic and error string
 #endif
