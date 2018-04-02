@@ -18,6 +18,20 @@ float ntohf(float val) {
     return val;
 }
 
+void Message::Message () {
+  magic_number = DEFAULT_MAGIC_NUMBER;
+  request_id = DEFAULT_REQUEST_ID;
+  request_type = DEFAULT_REQUEST_TYPE;
+  account_number = DEFAULT_ACCOUNT_NUMBER;
+  currency_type = DEFAULT_CURRENCY_TYPE;
+  is_reply = DEFAULT_IS_REPLY;
+  success = DEFAULT_SUCCESS;
+  amount = DEFAULT_AMOUNT;
+  account_balance = DEFAULT_ACCOUNT_BALANCE;
+  name = DEFAULT_NAME;
+  password = DEFAULT_PASSWORD;
+}
+
 const char* Message::serialize () {
   std::uint32_t _magic_number = htonl(magic_number);
   std::uint32_t _request_id = htonl(request_id);
@@ -26,8 +40,8 @@ const char* Message::serialize () {
   std::uint32_t _currency_type = htonl(currency_type);
   std::uint32_t _is_reply = htonl(is_reply);
   std::uint32_t _success = htonl(success);
-  float _amount;
-  float _account_balance;
+  float _amount = htonf(amount);
+  float _account_balance = htonf(account_balance);
 
   std::uint32_t name_size = name.size() + 1;
   std::uint32_t password_size = 8;
@@ -69,8 +83,63 @@ const char* Message::serialize () {
   return buffer;
 }
 
-void Message::deserialize (const char*) {
+void Message::deserialize (const char* buffer) {
+  std::uint32_t _magic_number;
+  std::uint32_t _request_id;
+  std::uint32_t _request_type;
+  std::uint32_t _account_number;
+  std::uint32_t _currency_type;
+  std::uint32_t _is_reply;
+  std::uint32_t _success;
+  float _amount;
+  float _account_balance;
 
+  std::uint32_t _name_size;
+  std::uint32_t _password_size;
+  std::string name; // max_length = 63 characters + null
+  std::string password; // // max_length = 7 characters + null
+
+  assert(buffer_size == sizeof(std::uint32_t) * 9 + sizeof(float) * 2 + 64 + 8);
+  std::uint32_t buffer_offset = 0;
+
+  memcpy(_magic_number, buffer + buffer_offset, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  memcpy(_request_id, buffer + buffer_offset, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  memcpy(_request_type, buffer + buffer_offset, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  memcpy(_account_number, buffer + buffer_offset, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  memcpy(_currency_type, buffer + buffer_offset, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  memcpy(_is_reply, buffer + buffer_offset, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  memcpy(_success, buffer + buffer_offset, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  memcpy(_amount, buffer + buffer_offset, sizeof(float));
+  buffer_offset += sizeof(float);
+  memcpy(_account_balance, buffer + buffer_offset, sizeof(float));
+  buffer_offset += sizeof(float);
+  memcpy(_name_size, buffer + buffer_offset, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  memcpy(_name, buffer + buffer_offset, ntohl(_name_size));
+  buffer_offset += _name_size;
+  memcpy(_password_size, buffer + buffer_offset, (void*)_password_size, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  memcpy(_password, buffer + buffer_offset, ntohl(_password_size));
+  buffer_offset += _password_size;
+
+  magic_number = ntohl(_magic_number);
+  request_id = ntohl(_request_id);
+  request_type = ntohl(_request_type);
+  account_number = ntohl(_account_number);
+  currency_type = ntohl(_currency_type);
+  is_reply = ntohl(_is_reply);
+  success = ntohl(_success);
+  amount = ntohf(_amount);
+  account_balance = ntohf(_account_balance);
+  name = _name;
+  password = _password;
 }
 
 // each message will have a request or reply id
