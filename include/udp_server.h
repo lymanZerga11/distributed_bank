@@ -1,5 +1,5 @@
-#ifndef UDP_CLIENT_H
-#define UDP_CLIENT_H
+#ifndef UDP_SERVER_H
+#define UDP_SERVER_H
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -13,18 +13,18 @@ public:
     udp_client_server_runtime_error(const char *w) : std::runtime_error(w) {}
 };
 
-class udp_client
+class udp_server
 {
 public:
-                        udp_client(const std::string& addr, int port);
-                        ~udp_client();
+                        udp_server(const std::string& addr, int port);
+                        ~udp_server();
 
     int                 get_socket() const;
     int                 get_port() const;
     std::string         get_addr() const;
 
-    int                 send(const char *msg, size_t size);
-    int                 timed_recv(char *msg, size_t max_size, int max_wait_ms);
+    int                 recvfrom(char *msg, size_t max_size);
+    int                 sendto(char *msg, size_t max_size);
 
 private:
     int                 f_socket;
