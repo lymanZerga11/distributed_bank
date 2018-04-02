@@ -11,7 +11,7 @@
 #define DEFAULT_REQUEST_TYPE 0
 #define DEFAULT_REQUEST_ID 0
 #define DEFAULT_ACCOUNT_NUMBER 0
-#define DEFAULT_PASSWORD "0"
+#define DEFAULT_PASSWORD "0000000"
 #define DEFAULT_CURRENCY_TYPE 0
 #define DEFAULT_AMOUNT 0.00
 #define DEFAULT_ACCOUNT_BALANCE 0.00
@@ -34,12 +34,10 @@ public:
 
     std::string name; // max_length = 64 characters
     std::string password; // // max_length = 64 characters
+
+    Message                 ();
+    void serialize          (char*);
+    void deserialize        (char*);
 };
 
-void Message::Message            ();
-const char* Message::serialize   ();
-void Message::deserialize        (const char*);
-
 #endif
-
-// each message will have a request or reply id
