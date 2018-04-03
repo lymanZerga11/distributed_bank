@@ -6,7 +6,7 @@
 #include "../include/message.h"
 #include "../include/udp_client.h"
 #include "../utils/log.cpp"
-
+#include "../utils/exceptions.cpp"
 
 class Client{
     std::uint64_t client_id;  // client's ip_address and port HI 32 bits
@@ -32,7 +32,7 @@ public:
     
     bool validate_request         (const Message & request_message);
     bool validate_response        (const Message & response_message);
-    Message get_response          (const Message & request_message);
+    Message get_response          (Message & request_message);
     void kill_client              ();
 };
 

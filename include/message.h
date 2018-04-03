@@ -17,8 +17,10 @@
 #define DEFAULT_ACCOUNT_BALANCE 0.00
 #define DEFAULT_IS_REPLY 2
 #define DEFAULT_SUCCESS 2
+#define DEFAULT_ERROR_DATA "0"
 
 #define MAX_NAME_SIZE 64
+#define MAX_ERROR_DATA_SIZE 64
 #define PASSWORD_SIZE 8
 
 enum client_requests {INVALID_REQUEST=0, OPEN_ACC, CLOSE_ACC, DEPOSIT, WITHDRAW, TAKE_LOAN, CHECK_BALANCE};
@@ -38,6 +40,7 @@ public:
 
     std::string name;  // max_length = 63 characters + null
     std::string password;  // max_length = 7 characters + null
+    std::string error_data;  // max_length = 63 characters + null
 
     Message                 (uint64_t request_id);
     void serialize          (char*);

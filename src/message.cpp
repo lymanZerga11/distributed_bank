@@ -67,13 +67,18 @@ void Message::serialize (char* buffer) {
   float _account_balance = htonf(account_balance);
 
   std::uint32_t name_size = name.size() + 1;
+  std::uint32_t error_data_size = error_data.size() + 1;
   std::uint32_t password_size = PASSWORD_SIZE;
+  
   std::uint32_t _name_size = htonl(name_size);
+  std::uint32_t _error_data_size = htonl(error_data_size);
   std::uint32_t _password_size = htonl(password_size);
+  
   std::string _name = name; // max_length = 63 characters + null
+  std::string _error_data = error_data; // // max_length = 63 characters + null
   std::string _password = password; // // max_length = 7 characters + null
 
-  memset(buffer, 0, sizeof(std::uint32_t) * 8 + sizeof(std::uint64_t) * 1 + sizeof(float) * 2 + MAX_NAME_SIZE + PASSWORD_SIZE);
+  memset(buffer, 0, sizeof(std::uint32_t) * 8 + sizeof(std::uint64_t) * 1 + sizeof(float) * 2 + MAX_NAME_SIZE + PASSWORD_SIZE + MAX_ERROR_DATA_SIZE);
   std::uint32_t buffer_offset = 0;
   memcpy(buffer + buffer_offset, (void*)&_magic_number, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
@@ -93,10 +98,17 @@ void Message::serialize (char* buffer) {
   buffer_offset += sizeof(float);
   memcpy(buffer + buffer_offset, (void*)&_account_balance, sizeof(float));
   buffer_offset += sizeof(float);
+  
   memcpy(buffer + buffer_offset, (void*)&_name_size, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
   memcpy(buffer + buffer_offset, _name.c_str(), name_size);
   buffer_offset += name_size;
+  
+  memcpy(buffer + buffer_offset, (void*)&_error_data_size, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  memcpy(buffer + buffer_offset, _error_data.c_str(), error_data_size);
+  buffer_offset += error_data_size;
+  
   memcpy(buffer + buffer_offset, (void*)&_password_size, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
   memcpy(buffer + buffer_offset, _password.c_str(), password_size);
@@ -115,11 +127,15 @@ void Message::deserialize (char* buffer) {
   float _account_balance;
 
   std::uint32_t _name_size;
+  std::uint32_t _error_data_size;
   std::uint32_t _password_size;
+  
   std::string _name; // max_length = 63 characters + null
+  std::string _error_data; // max_length = 63 characters + null
   std::string _password; // // max_length = 7 characters + null
 
   _name.resize(MAX_NAME_SIZE);
+  _error_data.resize(MAX_ERROR_DATA_SIZE);
   _password.resize(PASSWORD_SIZE);
   // assert(buffer_size == sizeof(std::uint32_t) * 9 + sizeof(float) * 2 + 64 + 8);
   std::uint32_t buffer_offset = 0;
@@ -141,10 +157,17 @@ void Message::deserialize (char* buffer) {
   buffer_offset += sizeof(float);
   memcpy(&_account_balance, buffer + buffer_offset, sizeof(float));
   buffer_offset += sizeof(float);
+  
   memcpy(&_name_size, buffer + buffer_offset, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
   memcpy((char*)_name.data(), buffer + buffer_offset, ntohl(_name_size));
   buffer_offset += ntohl(_name_size);
+  
+  memcpy(&_error_data_size, buffer + buffer_offset, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  memcpy((char*)_error_data.data(), buffer + buffer_offset, ntohl(_error_data_size));
+  buffer_offset += ntohl(_error_data_size);
+  
   memcpy(&_password_size, buffer + buffer_offset, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
   memcpy((char*)_password.data(), buffer + buffer_offset, ntohl(_password_size));

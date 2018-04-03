@@ -20,11 +20,11 @@ std::uint32_t Client::open_account (std::string name, std::string password, std:
   std::uint32_t account_number = DEFAULT_ACCOUNT_NUMBER;
   try {
     account_number = get_response (request_message).account_number; }
-  catch InvalidInputError {
+  catch (InvalidInputError& e) {
     log(ERROR) << "Invalid input entered on request_id " << request_message.request_id << std::endl; }
-  catch ServerSideError {
-    log(ERROR) << "Server returned: " << get_response (request_message).error_string  << " on request_id " << request_message.request_id << std::endl; }
-  catch MaxAttemptsError {
+  catch (ServerSideError& e) {
+    log(ERROR) << "Server returned: " << get_response (request_message).error_data  << " on request_id " << request_message.request_id << std::endl; }
+  catch (MaxAttemptsError& e) {
     log(ERROR) << "Maximum failed on request_id " << request_message.request_id << std::endl; }
   return account_number;
   // udp_client will return result not error. catch. implement at-least and at-most in get_response()
@@ -40,11 +40,11 @@ std::uint32_t Client::close_account (std::string name, std::uint32_t account_num
   std::uint32_t success = DEFAULT_SUCCESS;
   try {
     success = get_response (request_message).success; }
-  catch InvalidInputError {
+  catch (InvalidInputError& e) {
     log(ERROR) << "Invalid input entered on request_id " << request_message.request_id << std::endl; }
-  catch ServerSideError {
-    log(ERROR) << "Server returned: " << get_response (request_message).error_string  << " on request_id " << request_message.request_id << std::endl; }
-  catch MaxAttemptsError {
+  catch (ServerSideError& e) {
+    log(ERROR) << "Server returned: " << get_response (request_message).error_data  << " on request_id " << request_message.request_id << std::endl; }
+  catch (MaxAttemptsError& e) {
     log(ERROR) << "Maximum failed on request_id " << request_message.request_id << std::endl; }
   return success;
 }
@@ -62,11 +62,11 @@ float Client::deposit_money (std::string name, std::uint32_t account_number, std
   float account_balance = DEFAULT_ACCOUNT_BALANCE;
   try {
     account_balance = get_response (request_message).account_balance; }
-  catch InvalidInputError {
+  catch (InvalidInputError& e) {
     log(ERROR) << "Invalid input entered on request_id " << request_message.request_id << std::endl; }
-  catch ServerSideError {
-    log(ERROR) << "Server returned: " << get_response (request_message).error_string  << " on request_id " << request_message.request_id << std::endl; }
-  catch MaxAttemptsError {
+  catch (ServerSideError& e) {
+    log(ERROR) << "Server returned: " << get_response (request_message).error_data  << " on request_id " << request_message.request_id << std::endl; }
+  catch (MaxAttemptsError& e) {
     log(ERROR) << "Maximum failed on request_id " << request_message.request_id << std::endl; }
   return account_balance;
 }
@@ -84,11 +84,11 @@ float Client::withdraw_money (std::string name, std::uint32_t account_number, st
   float account_balance = DEFAULT_ACCOUNT_BALANCE;
   try {
     account_balance = get_response (request_message).account_balance; }
-  catch InvalidInputError {
+  catch (InvalidInputError& e) {
     log(ERROR) << "Invalid input entered on request_id " << request_message.request_id << std::endl; }
-  catch ServerSideError {
-    log(ERROR) << "Server returned: " << get_response (request_message).error_string  << " on request_id " << request_message.request_id << std::endl; }
-  catch MaxAttemptsError {
+  catch (ServerSideError& e) {
+    log(ERROR) << "Server returned: " << get_response (request_message).error_data  << " on request_id " << request_message.request_id << std::endl; }
+  catch (MaxAttemptsError& e) {
     log(ERROR) << "Maximum failed on request_id " << request_message.request_id << std::endl; }
   return account_balance;
 }
@@ -103,11 +103,11 @@ uint32_t Client::take_loan (std::string name, std::uint32_t account_number, std:
   uint32_t success = DEFAULT_SUCCESS;
   try {
    success = get_response (request_message).success; }
-  catch InvalidInputError {
+  catch (InvalidInputError& e) {
     log(ERROR) << "Invalid input entered on request_id " << request_message.request_id << std::endl; }
-  catch ServerSideError {
-    log(ERROR) << "Server returned: " << get_response (request_message).error_string  << " on request_id " << request_message.request_id << std::endl; }
-  catch MaxAttemptsError {
+  catch (ServerSideError& e) {
+    log(ERROR) << "Server returned: " << get_response (request_message).error_data  << " on request_id " << request_message.request_id << std::endl; }
+  catch (MaxAttemptsError& e) {
     log(ERROR) << "Maximum failed on request_id " << request_message.request_id << std::endl; }
   return success;
 }
@@ -122,11 +122,11 @@ float Client::check_balance (std::string name, std::uint32_t account_number, std
   float account_balance = DEFAULT_ACCOUNT_BALANCE;
   try {
    account_balance = get_response (request_message).account_balance; }
-  catch InvalidInputError {
+  catch (InvalidInputError& e) {
     log(ERROR) << "Invalid input entered on request_id " << request_message.request_id << std::endl; }
-  catch ServerSideError {
-    log(ERROR) << "Server returned: " << get_response (request_message).error_string  << " on request_id " << request_message.request_id << std::endl; }
-  catch MaxAttemptsError {
+  catch (ServerSideError& e) {
+    log(ERROR) << "Server returned: " << get_response (request_message).error_data  << " on request_id " << request_message.request_id << std::endl; }
+  catch (MaxAttemptsError& e) {
     log(ERROR) << "Maximum failed on request_id " << request_message.request_id << std::endl; }
   return account_balance;
 }
@@ -141,7 +141,7 @@ bool Client::validate_response (const Message & response_message) {
   return true;
 }
 
-Message Client::get_response (const Message & request_message) {
+Message Client::get_response (Message & request_message) {
   if (validate_request (request_message)) {
     char request_packet[2 * PACKET_SIZE];
     request_message.serialize(request_packet);
@@ -159,10 +159,10 @@ Message Client::get_response (const Message & request_message) {
       }
       else log(WARN) << "Timeout on request_id " << request_message.request_id << ". Retrying..." << std::endl;
     }
-    if (attempts >= max_request_attempts) throw MaxAttemptsError;
+    if (attempts >= max_request_attempts) throw MaxAttemptsError();
   }
   else
-    throw InvalidInputError;
+    throw InvalidInputError();
 }
 
 void Client::kill_client() {
