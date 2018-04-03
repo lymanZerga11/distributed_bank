@@ -57,7 +57,19 @@ std::string udp_client::get_addr() const {
 }
 
 int udp_client::send(const char *msg, size_t size) {
-    return sendto(f_socket, msg, size, 0, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen);
+    if (SIMULATE_REQUEST_LOSS) {
+        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+        std::default_random_engine engine(seed);
+        std::uniform_int_distribution<uint32_t> distr(0, 100);
+        int val = distr(engine);
+        if (val > 75) { 
+            return sendto(f_socket, msg, size, 0, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen);
+        }
+    }
+    else {
+        return sendto(f_socket, msg, size, 0, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen);
+    }
+    return 0;
 }
 
 int udp_client::recv(char *msg, size_t max_size)

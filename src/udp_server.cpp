@@ -58,3 +58,26 @@ std::string udp_server::get_addr() const
     return f_addr;
 }
 
+int udp_server::recv(int f_socket, char request_packet[], int packet_size, int flag, struct sockaddr_in &client_address, int &client_address_length) {
+    recvfrom(f_socket, request_packet, packet_size, flag,
+        (struct sockaddr *) &client_address, (socklen_t *) &client_address_length);
+}
+
+int udp_server::send(int f_socket, char response_packet[], int packet_size, int flag, struct sockaddr_in &client_address, int &client_address_length) {
+    
+    if (SIMULATE_REPLY_LOSS) {
+        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+        std::default_random_engine engine(seed);
+        std::uniform_int_distribution<uint32_t> distr(0, 100);
+        int val = distr(engine);
+        if (val > 75) { 
+            sendto(f_socket, response_packet, packet_size, flag,
+                 (struct sockaddr *) &client_address, client_address_length);
+        }
+    }
+    else {
+        sendto(f_socket, response_packet, packet_size, flag,
+                 (struct sockaddr *) &client_address, client_address_length);
+    }
+}
+

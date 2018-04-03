@@ -8,7 +8,6 @@
 #include "../utils/exceptions.cpp"
 #include "../utils/log.cpp"
 
-#include <sys/socket.h>
 #include <algorithm>
 #include <unordered_map>
 #include <iostream>

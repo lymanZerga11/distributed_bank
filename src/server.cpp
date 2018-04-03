@@ -109,19 +109,24 @@ void Server::process_messages () {
     struct sockaddr_in client_address;
     int client_address_length = sizeof(client_address);
 
-    if (recvfrom(udp.get_socket(), request_packet, PACKET_SIZE, 0,
-        (struct sockaddr *) &client_address, (socklen_t *) &client_address_length) > 1) {
+    if (udp.recv(udp.get_socket(), request_packet, PACKET_SIZE, 0,
+        client_address, client_address_length) > 1) {
       Message request_message (DEFAULT_REQUEST_ID);
-      Message response_message (request_message.request_id);
+      Message response_message (DEFAULT_REQUEST_ID);
       response_message.is_reply = 1;
+      
       request_message.deserialize(request_packet);
+      response_message.request_id = request_message.request_id;
+      
       if (DEBUG) log(WARN) << request_message << std::endl;
       try {
         if (validate_request (request_message)) {
           if (at_most_once_map.find(request_message.request_id) != at_most_once_map.end()) {
-            if (request_message.request_semantic == AT_MOST_ONCE)
+            if (request_message.request_semantic == AT_MOST_ONCE) {
+              log(WARN) << "Invoked at-most-once on command already run on request_id " + std::to_string(request_message.request_id) << std::endl;
               response_message = at_most_once_map[request_message.request_id];
-            else ;
+            }
+            else
               log(WARN) << "Invoked at-least-once on command already run on request_id " + std::to_string(request_message.request_id) << std::endl;
           }
           else {
@@ -161,8 +166,8 @@ void Server::process_messages () {
         response_message.error_data = "Authentication Failed on request_id " + std::to_string(request_message.request_id);
       }
       response_message.serialize(response_packet);
-      sendto(udp.get_socket(), response_packet, PACKET_SIZE, 0,
-                 (struct sockaddr *) &client_address, client_address_length);
+      udp.send(udp.get_socket(), response_packet, PACKET_SIZE, 0,
+                 client_address, client_address_length);
     }
   }
 }

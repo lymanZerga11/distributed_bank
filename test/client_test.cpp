@@ -20,20 +20,17 @@ std::string get_password()
 
 int get_currency_type()
 {
-    int currency_type;
-     
+    std::uint32_t currency_type;
 	std::cout << "Enter your choice (1: SGD, 2: USD, 3: QAR) for the currency type: ";
-	std::cin >> currency_type;
-    std::cin.get();
+    std::string temp; std::getline(std::cin, temp); currency_type = std::stoull(temp);
 	return currency_type;
 }
 
 int get_account_number()
 {
-    int account_number;
+    std::uint64_t account_number;
     std::cout << "Enter your account number: ";
-    std::cin >> account_number;
-    std::cin.get();
+    std::string temp; std::getline(std::cin, temp); account_number = std::stoull(temp);
     return account_number;
 }
 
@@ -57,10 +54,10 @@ float get_amount(std::string action)
 
 int get_monitor_interval()
 {
-    int monitor_interval_in_seconds;
+    std::uint32_t monitor_interval_in_seconds;
     std::cout << "Enter the monitor interval in seconds: ";
     std::cin >> monitor_interval_in_seconds;
-    std::cin.get();
+    std::string temp; std::getline(std::cin, temp); monitor_interval_in_seconds = std::stoull(temp);
     return monitor_interval_in_seconds;
 }
 
@@ -97,7 +94,7 @@ int main () {
             currency_type = get_currency_type();
             account_balance = get_account_balance();
             uint32_t new_account_number = client.open_account(name, password, currency_type, account_balance);
-            if (new_account_number != DEFAULT_ACCOUNT_NUMBER) log(INFO) << "Opened account - Account number: " << account_number <<std::endl; 
+            if (new_account_number != DEFAULT_ACCOUNT_NUMBER) log(INFO) << "Opened account - Account number: " << new_account_number <<std::endl; 
     	}
     	else if (user_choice == "2")
     	{
@@ -157,7 +154,7 @@ int main () {
             account_number = get_account_number();
             password = get_password();
             uint32_t success = client.take_loan(name, account_number, password);
-            if (success == 1) log(INFO) << "Loan Request Successful" <<std::endl; 
+            if (success == 1) log(INFO) << "Loan Request Successful" << std::endl; 
     	}
     	else if (user_choice == "8")
     	{

@@ -1,11 +1,17 @@
 #ifndef UDP_CLIENT_H
 #define UDP_CLIENT_H
 
+#define SIMULATE_REQUEST_LOSS 0
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <stdexcept>
 #include <string>
+#include <algorithm>
+#include <iostream>
+#include <random>
+#include <chrono>
 
 class udp_client_server_runtime_error : public std::runtime_error
 {

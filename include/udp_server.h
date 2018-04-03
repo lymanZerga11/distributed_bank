@@ -1,11 +1,17 @@
 #ifndef UDP_SERVER_H
 #define UDP_SERVER_H
 
+#define SIMULATE_REPLY_LOSS 1
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <stdexcept>
 #include <string>
+#include <algorithm>
+#include <iostream>
+#include <random>
+#include <chrono>
 
 class udp_client_server_runtime_error : public std::runtime_error
 {
@@ -23,8 +29,8 @@ public:
     int                 get_port() const;
     std::string         get_addr() const;
 
-    int                 recvfrom(char *msg, size_t max_size);
-    int                 sendto(char *msg, size_t max_size);
+    int                 recv(int f_socket, char request_packet[], int packet_size, int flag, struct sockaddr_in &client_address, int &client_address_length);
+    int                 send(int f_socket, char response_packet[], int packet_size, int flag, struct sockaddr_in &client_address, int &client_address_length);
 
 private:
     int                 f_socket;

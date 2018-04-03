@@ -22,7 +22,8 @@ std::uint32_t Client::open_account (std::string name, std::string password, std:
 
   std::uint32_t account_number = DEFAULT_ACCOUNT_NUMBER;
   try {
-    account_number = get_response (request_message).account_number; }
+    account_number = get_response (request_message).account_number; 
+  }
   catch (InvalidInputError& e) {
     log(ERROR) << "Invalid input entered on request_id " << request_message.request_id << std::endl; }
   catch (ServerSideError& e) {
@@ -86,7 +87,8 @@ float Client::withdraw_money (std::string name, std::uint32_t account_number, st
 
   float account_balance = DEFAULT_ACCOUNT_BALANCE;
   try {
-    account_balance = get_response (request_message).account_balance; }
+    account_balance = get_response (request_message).account_balance; 
+  }
   catch (InvalidInputError& e) {
     log(ERROR) << "Invalid input entered on request_id " << request_message.request_id << std::endl; }
   catch (ServerSideError& e) {
