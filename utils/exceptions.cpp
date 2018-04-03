@@ -21,3 +21,11 @@ class InvalidInputError: public std::exception
       return "InvalidInputError";
    }
 };
+
+class AuthenticationFailed: public std::exception
+{
+  const char * what () const throw () {
+      return "AuthenticationFailed";
+   }
+};
+

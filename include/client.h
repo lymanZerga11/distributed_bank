@@ -1,6 +1,8 @@
 #ifndef INCLUDED_client_h
 #define INCLUDED_client_h
 
+#define DEBUG 1
+
 #include <string>
 
 #include "../include/message.h"

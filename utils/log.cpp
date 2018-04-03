@@ -5,7 +5,7 @@
 
 enum log_levels {INFO, WARN, ERROR};
 
-std::ostream& log(int log_level) {
+inline std::ostream& log(int log_level) {
   using namespace date;
   using namespace std::chrono;
   if (log_level == ERROR)

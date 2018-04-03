@@ -42,6 +42,22 @@ uint64_t ntohll(uint64_t value) {
     }
 }
 
+Message::Message () {
+  request_id = DEFAULT_REQUEST_ID;
+  magic_number = DEFAULT_MAGIC_NUMBER;
+  request_type = DEFAULT_REQUEST_TYPE;
+  account_number = DEFAULT_ACCOUNT_NUMBER;
+  currency_type = DEFAULT_CURRENCY_TYPE;
+  is_reply = DEFAULT_IS_REPLY;
+  success = DEFAULT_SUCCESS;
+  amount = DEFAULT_AMOUNT;
+  account_balance = DEFAULT_ACCOUNT_BALANCE;
+  name = DEFAULT_NAME;
+  password = DEFAULT_PASSWORD;
+  request_semantic = DEFAULT_REQUEST_SEMANTIC;
+  error_data = DEFAULT_ERROR_DATA;
+}
+
 Message::Message (uint64_t request_id) : request_id(request_id) {
   magic_number = DEFAULT_MAGIC_NUMBER;
   request_type = DEFAULT_REQUEST_TYPE;
@@ -53,6 +69,8 @@ Message::Message (uint64_t request_id) : request_id(request_id) {
   account_balance = DEFAULT_ACCOUNT_BALANCE;
   name = DEFAULT_NAME;
   password = DEFAULT_PASSWORD;
+  request_semantic = DEFAULT_REQUEST_SEMANTIC;
+  error_data = DEFAULT_ERROR_DATA;
 }
 
 void Message::serialize (char* buffer) {
@@ -63,6 +81,8 @@ void Message::serialize (char* buffer) {
   std::uint32_t _currency_type = htonl(currency_type);
   std::uint32_t _is_reply = htonl(is_reply);
   std::uint32_t _success = htonl(success);
+  std::uint32_t _request_semantic = htonl(request_semantic);
+  
   float _amount = htonf(amount);
   float _account_balance = htonf(account_balance);
 
@@ -94,6 +114,9 @@ void Message::serialize (char* buffer) {
   buffer_offset += sizeof(std::uint32_t);
   memcpy(buffer + buffer_offset, (void*)&_success, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
+  memcpy(buffer + buffer_offset, (void*)&_request_semantic, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  
   memcpy(buffer + buffer_offset, (void*)&_amount, sizeof(float));
   buffer_offset += sizeof(float);
   memcpy(buffer + buffer_offset, (void*)&_account_balance, sizeof(float));
@@ -123,6 +146,7 @@ void Message::deserialize (char* buffer) {
   std::uint32_t _currency_type;
   std::uint32_t _is_reply;
   std::uint32_t _success;
+  std::uint32_t _request_semantic;
   float _amount;
   float _account_balance;
 
@@ -153,6 +177,9 @@ void Message::deserialize (char* buffer) {
   buffer_offset += sizeof(std::uint32_t);
   memcpy(&_success, buffer + buffer_offset, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
+  memcpy(&_request_semantic, buffer + buffer_offset, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  
   memcpy(&_amount, buffer + buffer_offset, sizeof(float));
   buffer_offset += sizeof(float);
   memcpy(&_account_balance, buffer + buffer_offset, sizeof(float));
@@ -180,8 +207,12 @@ void Message::deserialize (char* buffer) {
   currency_type = ntohl(_currency_type);
   is_reply = ntohl(_is_reply);
   success = ntohl(_success);
+  request_semantic = ntohl(_request_semantic);
+  
   amount = ntohf(_amount);
   account_balance = ntohf(_account_balance);
+  
   name = _name;
+  error_data = _error_data;
   password = _password;
 }

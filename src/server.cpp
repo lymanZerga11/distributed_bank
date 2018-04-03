@@ -1,15 +1,23 @@
-#ifndef INCLUDED_client_h
-#define INCLUDED_client_h
-
 #include "../include/server.h"
 
-#include <algorithm>
-#include <unordered_map>
-#include <iostream>
-#include <random>
-#include <chrono>
+float exchange (float amount, std::uint32_t currency_type) {
+  float new_amount = amount;
+  switch (currency_type) {
+    case SGD:
+      new_amount = amount;
+      break;
+    case USD:
+      new_amount = 1.31 * amount;
+      break;
+    case QAR:
+      new_amount = 0.36 * amount;
+      break;
+  }
+  return new_amount;
+}
 
-void Server::Server(const std::string &host_address, const int port) : udp (host_address, port){
+Server::Server(const std::string &host_address, const int port) : udp (host_address, port){
+  if (DEBUG) log(INFO) << "Server initialised.." <<std::endl;
 }
 
 std::uint32_t Server::open_account (std::string name, std::string password, std::uint16_t currency_type, float amount)  {
@@ -18,20 +26,23 @@ std::uint32_t Server::open_account (std::string name, std::string password, std:
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine engine(seed);
     std::uniform_int_distribution<uint32_t> distr(1000000000, 3000000000);
-    std::uint32_t account_number = distr(engine);
+    account_number = distr(engine);
   }
-  Account new_account (name, password, currency_type, account_number, exchange(amount, currency_type);
+  Account new_account (name, password, account_number, exchange(amount, currency_type));
+  accounts[account_number] = new_account;
+  log(INFO) << "Opened Account - " << new_account <<std::endl;
   return account_number;
 }
 
 std::uint32_t Server::close_account (std::string name, std::uint32_t account_number, std::string password) {
   std::uint32_t success = 0;
-  if (authenticate (account_number, password, name)) {
+  if (authenticate (name, account_number, password)) {
+    log(INFO) << "Closing Account - " << accounts[account_number] << std::endl;
     accounts.erase(account_number);
     success = 1;
   }
   else {
-    throw AuthenticationFailed;
+    throw AuthenticationFailed();
   }
   return success;
 }
@@ -41,11 +52,12 @@ float Server::deposit_money (std::string name, std::uint32_t account_number, std
   float account_balance = DEFAULT_ACCOUNT_BALANCE;
   if (authenticate (name, account_number, password)) {
     accounts[account_number].balance += exchange(amount, currency_type);
-    account_balance = accounts[account_number].balance
+    account_balance = accounts[account_number].balance;
   }
   else {
-    throw AuthenticationFailed;
+    throw AuthenticationFailed();
   }
+  log(INFO) << "Deposit Money - " << accounts[account_number] << std::endl;
   return account_balance;
 }
 
@@ -54,23 +66,25 @@ float Server::withdraw_money (std::string name, std::uint32_t account_number, st
   float account_balance = DEFAULT_ACCOUNT_BALANCE;
   if (authenticate (name, account_number, password)) {
     accounts[account_number].balance -= exchange(amount, currency_type);
-    account_balance = accounts[account_number].balance
+    account_balance = accounts[account_number].balance;
   }
   else {
-    throw AuthenticationFailed;
+    throw AuthenticationFailed();
   }
+  log(INFO) << "Withdraw Money - " << accounts[account_number] << std::endl;
   return account_balance;
 }
 
 std::uint32_t Server::take_loan (std::string name, std::uint32_t account_number, std::string password) {
   std::uint32_t success = 0;
   if (authenticate (name, account_number, password)) {
-    accounts[account_number].balance += exchange(loan_amount, currency_type);
+    accounts[account_number].balance += LOAN_AMOUNT;
     success = 1;
   }
   else {
-    throw AuthenticationFailed;
+    throw AuthenticationFailed();
   }
+  log(INFO) << "Take Loan - " << accounts[account_number] << std::endl;
   return success;
 }
 
@@ -80,8 +94,9 @@ float Server::check_balance (std::string name, std::uint32_t account_number, std
     account_balance = accounts[account_number].balance;
   }
   else {
-    throw AuthenticationFailed;
+    throw AuthenticationFailed();
   }
+  log(INFO) << "Check Balance - " << accounts[account_number] << std::endl;
   return account_balance;
 }
 
@@ -94,48 +109,60 @@ void Server::process_messages () {
     struct sockaddr_in client_address;
     int client_address_length = sizeof(client_address);
 
-    if (udp.recvfrom(udp.get_socket(), request_packet, PACKET_SIZE, 0,
+    if (recvfrom(udp.get_socket(), request_packet, PACKET_SIZE, 0,
         (struct sockaddr *) &client_address, (socklen_t *) &client_address_length) > 1) {
       Message request_message (DEFAULT_REQUEST_ID);
       Message response_message (DEFAULT_REQUEST_ID);
+      response_message.is_reply = 1;
       request_message.deserialize(request_packet);
-      if (validate_request (request_message)) {
-        if (at_most_once_map.find(request_message.request_id) != at_most_once_map.end()) {
-          if (request_semantics == AT_MOST_ONCE)
-            response_message = at_most_once_map[request_message.request_id];
-          else ;
-          // warn
-        }
-        else {
-          switch (request_message.request_type) {
-            case OPEN_ACC:
-              response_message.account_number = open_account(request_message.name, request_message.password, request_message.currency_type);
-              break;
-            case CLOSE_ACC:
-              response_message.success = close_account(request_message.name, request_message.account_number, request_message.password);
-              break;
-            case DEPOSIT:
-              response_message.account_balance = deposit_money(request_message.name, request_message.account_number, request_message.password,
-                            request_message.currency_type, request_message.amount);
-              break;
-            case WITHDRAW:
-              response_message.account_balance = withdraw_money(request_message.name, request_message.account_number, request_message.password,
-                            request_message.currency_type, request_message.amount);
-              break;
-            case TAKE_LOAN:
-              response_message.success = take_loan(request_message.name, request_message.account_number, request_message.password);
-              break;
-            case CHECK_BALANCE:
-              response_message.account_balance = check_balance(request_message.name, request_message.account_number, request_message.password);
-              break;
+      if (DEBUG) log(INFO) << request_message << std::endl;
+      try {
+        if (validate_request (request_message)) {
+          if (at_most_once_map.find(request_message.request_id) != at_most_once_map.end()) {
+            if (request_message.request_semantic == AT_MOST_ONCE)
+              response_message = at_most_once_map[request_message.request_id];
+            else ;
+              log(WARN) << "Invoked at-least-once on command already run on request_id " + std::to_string(request_message.request_id) << std::endl;
           }
+          else {
+            switch (request_message.request_type) {
+              case OPEN_ACC:
+                response_message.account_number = open_account(request_message.name, request_message.password, request_message.currency_type, request_message.amount);
+                break;
+              case CLOSE_ACC:
+                response_message.success = close_account(request_message.name, request_message.account_number, request_message.password);
+                break;
+              case DEPOSIT:
+                response_message.account_balance = deposit_money(request_message.name, request_message.account_number, request_message.password,
+                              request_message.currency_type, request_message.amount);
+                break;
+              case WITHDRAW:
+                response_message.account_balance = withdraw_money(request_message.name, request_message.account_number, request_message.password,
+                              request_message.currency_type, request_message.amount);
+                break;
+              case TAKE_LOAN:
+                response_message.success = take_loan(request_message.name, request_message.account_number, request_message.password);
+                break;
+              case CHECK_BALANCE:
+                response_message.account_balance = check_balance(request_message.name, request_message.account_number, request_message.password);
+                break;
+            }
+          }
+          at_most_once_map[request_message.request_id] = response_message;
         }
+        else throw InvalidInputError();
       }
-      else throw InvalidRequestError;
-      at_most_once_map[request_message.request_id] = response_message;
+      catch (InvalidInputError & e) {
+        log(ERROR) << "Invalid request received on request_id " + std::to_string(request_message.request_id) << std::endl;;
+        response_message.error_data = "Invalid request received on request_id " + std::to_string(request_message.request_id);
+      }
+      catch (AuthenticationFailed & e) {
+        log(ERROR) << "Authentication Failed on request_id " + std::to_string(request_message.request_id) << std::endl;;
+        response_message.error_data = "Authentication Failed on request_id " + std::to_string(request_message.request_id);
+      }
       response_message.serialize(response_packet);
-      udp.sendto(udp.get_socket(), request_packet, PACKET_SIZE, 0,
-                 (struct sockaddr *) &client_address, (socklen_t *) &client_address_length);
+      sendto(udp.get_socket(), request_packet, PACKET_SIZE, 0,
+                 (struct sockaddr *) &client_address, client_address_length);
     }
   }
 }
@@ -154,7 +181,3 @@ bool Server::validate_request (const Message & request_message) {
 void Server::kill_server() {
   ;
 }
-
-#endif
-
-// give exchange rates

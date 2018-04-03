@@ -58,30 +58,3 @@ std::string udp_server::get_addr() const
     return f_addr;
 }
 
-int udp_server::recv(char *msg, size_t max_size)
-{
-    return ::recv(f_socket, msg, max_size, 0);
-}
-
-int udp_server::timed_recv(char *msg, size_t max_size, int max_wait_ms)
-{
-    fd_set s;
-    FD_ZERO(&s);
-    FD_SET(f_socket, &s);
-    struct timeval timeout;
-    timeout.tv_sec = max_wait_ms / 1000;
-    timeout.tv_usec = (max_wait_ms % 1000) * 1000;
-    int retval = select(FD_SETSIZE, &s, NULL, NULL, &timeout);
-    if(retval == -1)
-    {
-        // select() set errno accordingly
-        return -1;
-    }
-    if(retval > 0)
-    {
-        // our socket has data
-        return udp_server::recv(msg, max_size);
-    }
-    errno = EAGAIN;
-    return -1;
-}
