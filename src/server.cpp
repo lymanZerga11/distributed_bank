@@ -189,16 +189,16 @@ void Server::kill_server() {
 
 void Server::update_monitors (std::string update) {
     for (auto monitor : monitor_clients) {
-      if (monitor_client.monitor_endpoint > std::chrono::system_clock::now()) {
+      if (monitor.monitor_endpoint > std::chrono::system_clock::now()) {
         Message response_message (DEFAULT_REQUEST_ID);
         
-        response_message.request_id = monitor_client.request_id;
+        response_message.request_id = monitor.request_id;
         response_message.monitor_data = update;
         response_message.is_reply = 1;
-        
+        char response_packet[PACKET_SIZE];
         response_message.serialize(response_packet);
         udp.send(udp.get_socket(), response_packet, PACKET_SIZE, 0,
-                 monitor_client.client_address, monitor_client.client_address_length);
+                 monitor.client_address, monitor.client_address_length);
         
         // add code on client side to monitor loop
         // add code for message packet include monitor_data string
