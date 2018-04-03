@@ -56,13 +56,12 @@ int get_monitor_interval()
 {
     std::uint32_t monitor_interval_in_seconds;
     std::cout << "Enter the monitor interval in seconds: ";
-    std::cin >> monitor_interval_in_seconds;
     std::string temp; std::getline(std::cin, temp); monitor_interval_in_seconds = std::stoull(temp);
     return monitor_interval_in_seconds;
 }
 
 int main () {
-    Client client ("127.0.0.1", 52222);
+    Client client ("127.0.0.1", 52225);
     std::string user_choice = "";
     while(user_choice != "8") {
         std::string name;
@@ -133,8 +132,8 @@ int main () {
     	else if (user_choice == "5")
     	{
             std::cout << "You have chosen to monitor updates made to all bank accounts." << std::endl;
-    
-            monitor_interval_in_seconds = get_monitor_interval();        
+            monitor_interval_in_seconds = get_monitor_interval();   
+            client.monitor(monitor_interval_in_seconds);
     	}
     	else if (user_choice == "6")
     	{

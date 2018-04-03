@@ -151,13 +151,12 @@ void Client::monitor (std::uint32_t monitor_interval_in_seconds) {
   request_message.serialize(request_packet);
   udp.send(request_packet, PACKET_SIZE);
   while (monitor_endpoint > std::chrono::system_clock::now()) {
+    char response_packet[2 * PACKET_SIZE];
     if (udp.timed_recv(response_packet, PACKET_SIZE, 10000) > 0) {
       Message response_message (DEFAULT_REQUEST_ID);
       response_message.deserialize(response_packet);
       if (DEBUG) log(WARN) << response_message << std::endl;
       if (validate_response(response_message) && request_message.request_id == response_message.request_id) {
-          if (response_message.error_data != DEFAULT_ERROR_DATA)
-            throw ServerSideError(response_message.error_data);
           log(INFO) << response_message.monitor_data << std::endl;
       }
     }
@@ -187,10 +186,10 @@ Message Client::get_response (Message & request_message) {
         Message response_message (DEFAULT_REQUEST_ID);
         response_message.deserialize(response_packet);
         if (DEBUG) log(WARN) << response_message << std::endl;
-        // if (DEBUG) log(ERROR) << response_message.error_data << std::endl;
         if (validate_response(response_message) && request_message.request_id == response_message.request_id) {
-            if (response_message.error_data != DEFAULT_ERROR_DATA)
+            if (response_message.error_data[0] != std::string(DEFAULT_ERROR_DATA)[0]) {
               throw ServerSideError(response_message.error_data);
+            }
             return response_message;
         }
         else log(WARN) << "Invalid response on request_id " << request_message.request_id << ". Retrying..." << std::endl;

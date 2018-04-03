@@ -14,6 +14,8 @@
 #include <iostream>
 #include <random>
 #include <chrono>
+#include <string.h>
+
 
 class Client{
     std::uint64_t client_id;  // client's ip_address and port HI 32 bits

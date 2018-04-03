@@ -15,6 +15,7 @@
 #include <random>
 #include <chrono>
 #include <tuple>
+#include <arpa/inet.h>
 
 #define LOAN_AMOUNT 100.0
 #define BASE_CURRENCY_TYPE SGD
@@ -44,8 +45,13 @@ struct monitor_client {
 
     monitor_client (struct sockaddr_in _client_address,
         int _client_address_length, std::uint64_t _request_id, std::uint32_t _monitor_interval_in_seconds) :
-        client_address(_client_address), client_address_length(_client_address_length),
         request_id(_request_id) {
+        
+        client_address.sin_family = AF_INET;
+        client_address.sin_addr.s_addr = _client_address.sin_addr.s_addr;
+        client_address.sin_port = _client_address.sin_port;
+        client_address_length = sizeof(client_address), 
+        
         monitor_endpoint = std::chrono::system_clock::now() +
                                 std::chrono::seconds(_monitor_interval_in_seconds);
     }
