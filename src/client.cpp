@@ -34,6 +34,7 @@ std::uint32_t Client::open_account (std::string name, std::string password, std:
 std::uint32_t Client::close_account (std::string name, std::uint32_t account_number, std::string password) {
   Message request_message (client_id | (request_count++));
   request_message.request_type = CLOSE_ACC;
+  request_message.name = name;
   request_message.account_number = account_number;
   request_message.password = password;
 

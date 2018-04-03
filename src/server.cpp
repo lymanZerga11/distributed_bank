@@ -17,7 +17,7 @@ float exchange (float amount, std::uint32_t currency_type) {
 }
 
 Server::Server(const std::string &host_address, const int port) : udp (host_address, port){
-  if (DEBUG) log(INFO) << "Server initialised.." <<std::endl;
+  if (DEBUG) log(INFO) << "Server initialised on " + host_address + ":" + std::to_string(port) + "..." <<std::endl;
 }
 
 std::uint32_t Server::open_account (std::string name, std::string password, std::uint16_t currency_type, float amount)  {
