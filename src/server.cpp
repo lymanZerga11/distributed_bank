@@ -17,7 +17,7 @@ float exchange (float amount, std::uint32_t currency_type) {
 }
 
 Server::Server(const std::string &host_address, const int port) : udp (host_address, port){
-  if (DEBUG) log(INFO) << "Server initialised on " + host_address + ":" + std::to_string(port) + "..." <<std::endl;
+  if (DEBUG) log(WARN) << "Server initialised on " + host_address + ":" + std::to_string(port) + "..." <<std::endl;
 }
 
 std::uint32_t Server::open_account (std::string name, std::string password, std::uint16_t currency_type, float amount)  {
@@ -112,10 +112,10 @@ void Server::process_messages () {
     if (recvfrom(udp.get_socket(), request_packet, PACKET_SIZE, 0,
         (struct sockaddr *) &client_address, (socklen_t *) &client_address_length) > 1) {
       Message request_message (DEFAULT_REQUEST_ID);
-      Message response_message (DEFAULT_REQUEST_ID);
+      Message response_message (request_message.request_id);
       response_message.is_reply = 1;
       request_message.deserialize(request_packet);
-      if (DEBUG) log(INFO) << request_message << std::endl;
+      if (DEBUG) log(WARN) << request_message << std::endl;
       try {
         if (validate_request (request_message)) {
           if (at_most_once_map.find(request_message.request_id) != at_most_once_map.end()) {
@@ -161,7 +161,7 @@ void Server::process_messages () {
         response_message.error_data = "Authentication Failed on request_id " + std::to_string(request_message.request_id);
       }
       response_message.serialize(response_packet);
-      sendto(udp.get_socket(), request_packet, PACKET_SIZE, 0,
+      sendto(udp.get_socket(), response_packet, PACKET_SIZE, 0,
                  (struct sockaddr *) &client_address, client_address_length);
     }
   }

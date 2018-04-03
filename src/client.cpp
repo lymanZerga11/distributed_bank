@@ -6,6 +6,9 @@
 Client::Client(const std::string &host_address, const int port) : udp(host_address, port) {
   client_id = uint64_t(ntohl(inet_addr("127.0.0.1"))) << 32 | uint64_t(udp.get_bound_port()) << 24;
   // initialise timeout, max_attempts, request_semantic from config
+  timeout = 10000;
+  request_semantic = AT_MOST_ONCE;
+  max_request_attempts = 3;
   request_count = 0;
 }
 
@@ -27,7 +30,6 @@ std::uint32_t Client::open_account (std::string name, std::string password, std:
   catch (MaxAttemptsError& e) {
     log(ERROR) << "Maximum failed on request_id " << request_message.request_id << std::endl; }
   return account_number;
-  // udp_client will return result not error. catch. implement at-least and at-most in get_response()
   // if DEFAULT, dont print in console
 }
 
@@ -154,6 +156,7 @@ Message Client::get_response (Message & request_message) {
       if (udp.timed_recv(response_packet, PACKET_SIZE, timeout) > 0) {
         Message response_message (DEFAULT_REQUEST_ID);
         response_message.deserialize(response_packet);
+        if (DEBUG) log(WARN) << response_message <<std::endl;
         if (validate_response(response_message) &&
             request_message.request_id == response_message.request_id) return response_message;
         else log(WARN) << "Invalid response on request_id " << request_message.request_id << ". Retrying..." << std::endl;

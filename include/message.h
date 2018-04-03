@@ -29,7 +29,7 @@
 
 enum client_requests {INVALID_REQUEST=0, OPEN_ACC, CLOSE_ACC, DEPOSIT, WITHDRAW, TAKE_LOAN, CHECK_BALANCE};
 enum currency_types {INVALID_CURRENCY=0, SGD, USD, QAR};
-enum request_semantics {INVALID_SEMANTIC=0, AT_MOST_ONCE, AT_LEAST_ONCE};
+enum request_semantics {AT_MOST_ONCE=0, AT_LEAST_ONCE};
 
 class Message {
 public:
