@@ -114,10 +114,10 @@ void Server::process_messages () {
       Message request_message (DEFAULT_REQUEST_ID);
       Message response_message (DEFAULT_REQUEST_ID);
       response_message.is_reply = 1;
-      
+
       request_message.deserialize(request_packet);
       response_message.request_id = request_message.request_id;
-      
+
       if (DEBUG) log(WARN) << request_message << std::endl;
       try {
         if (validate_request (request_message)) {
@@ -150,6 +150,9 @@ void Server::process_messages () {
                 break;
               case CHECK_BALANCE:
                 response_message.account_balance = check_balance(request_message.name, request_message.account_number, request_message.password);
+                break;
+              case MONITOR:
+                monitor_clients.push_back(monitor_client(client_address, client_address_length, request_message.request_id, request_message.monitor_interval_in_seconds));
                 break;
             }
           }
@@ -191,7 +194,7 @@ void Server::update_monitors (std::string update) {
     for (auto monitor : monitor_clients) {
       if (monitor.monitor_endpoint > std::chrono::system_clock::now()) {
         Message response_message (DEFAULT_REQUEST_ID);
-        
+
         response_message.request_id = monitor.request_id;
         response_message.monitor_data = update;
         response_message.is_reply = 1;
@@ -199,9 +202,8 @@ void Server::update_monitors (std::string update) {
         response_message.serialize(response_packet);
         udp.send(udp.get_socket(), response_packet, PACKET_SIZE, 0,
                  monitor.client_address, monitor.client_address_length);
-        
+
         // add code on client side to monitor loop
-        // add code for message packet include monitor_data string
       }
       else {
         // remove

@@ -40,12 +40,13 @@ struct monitor_client {
     int client_address_length;
     std::uint64_t request_id;
     std::chrono::system_clock::time_point monitor_endpoint;
-    monitor_client (struct sockaddr_in _client_address, 
+    
+    monitor_client (struct sockaddr_in _client_address,
         int _client_address_length, std::uint64_t _request_id, std::uint32_t _monitor_interval_in_seconds) :
-        client_address(_client_address), client_address_length(_client_address_length), 
+        client_address(_client_address), client_address_length(_client_address_length),
         request_id(_request_id) {
-        monitor_endpoint = std::chrono::system_clock::now() + 
-                                std::chrono::seconds(_monitor_interval_in_seconds);   
+        monitor_endpoint = std::chrono::system_clock::now() +
+                                std::chrono::seconds(_monitor_interval_in_seconds);
     }
 };
 
@@ -64,7 +65,7 @@ class Server{
     std::vector<monitor_client> monitor_clients;
     std::unordered_map <uint32_t, Account> accounts;
     udp_server udp;
-  
+
 public:
     Server                   (const std::string &host_address, const int port);
     std::uint32_t open_account    (std::string name, std::string password, std::uint16_t currency_type, float amount);
@@ -74,11 +75,11 @@ public:
     std::uint32_t take_loan       (std::string name, std::uint32_t account_number, std::string password);
     float check_balance           (std::string name, std::uint32_t account_number, std::string password);
     // bool Client::monitor                  (std::string name, std::string password);
-    
+
     void process_messages         ();
     bool authenticate             (std::string name, std::uint32_t account_number, std::string password);
     bool validate_request         (const Message & request_message);
-    
+
     void kill_server              ();
     void update_monitors          (std::string update);
 };

@@ -30,8 +30,8 @@ public:
     float withdraw_money          (std::string name, std::uint32_t account_number, std::string password, std::uint32_t currency_type, float amount);
     std::uint32_t take_loan       (std::string name, std::uint32_t account_number, std::string password);
     float check_balance           (std::string name, std::uint32_t account_number, std::string password);
-    // bool monitor                  (std::string name, std::string password);
-    
+    void monitor                  (std::uint32_t );
+
     bool validate_request         (const Message & request_message);
     bool validate_response        (const Message & response_message);
     Message get_response          (Message & request_message);

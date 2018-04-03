@@ -57,6 +57,7 @@ Message::Message () {
   request_semantic = DEFAULT_REQUEST_SEMANTIC;
   error_data = DEFAULT_ERROR_DATA;
   monitor_data = DEFAULT_MONITOR_DATA;
+  monitor_interval_in_seconds = DEFAULT_MONITOR_INTERVAL_IN_SECONDS;
 }
 
 Message::Message (uint64_t request_id) : request_id(request_id) {
@@ -73,6 +74,7 @@ Message::Message (uint64_t request_id) : request_id(request_id) {
   request_semantic = DEFAULT_REQUEST_SEMANTIC;
   error_data = DEFAULT_ERROR_DATA;
   monitor_data = DEFAULT_MONITOR_DATA;
+  monitor_interval_in_seconds = DEFAULT_MONITOR_INTERVAL_IN_SECONDS;
 }
 
 void Message::serialize (char* buffer) {
@@ -84,6 +86,7 @@ void Message::serialize (char* buffer) {
   std::uint32_t _is_reply = htonl(is_reply);
   std::uint32_t _success = htonl(success);
   std::uint32_t _request_semantic = htonl(request_semantic);
+  std::uint32_t _monitor_interval_in_seconds = htonl(monitor_interval_in_seconds);
 
   float _amount = htonf(amount);
   float _account_balance = htonf(account_balance);
@@ -103,7 +106,7 @@ void Message::serialize (char* buffer) {
   std::string _monitor_data = monitor_data; // // max_length = 63 characters + null
   std::string _password = password; // // max_length = 7 characters + null
 
-  memset(buffer, 0, sizeof(std::uint32_t) * 8 + sizeof(std::uint64_t) * 1 + sizeof(float) * 2 + MAX_NAME_SIZE
+  memset(buffer, 0, sizeof(std::uint32_t) * 9 + sizeof(std::uint64_t) * 1 + sizeof(float) * 2 + MAX_NAME_SIZE
                     + PASSWORD_SIZE + MAX_ERROR_DATA_SIZE + MAX_MONITOR_DATA_SIZE);
   std::uint32_t buffer_offset = 0;
   memcpy(buffer + buffer_offset, (void*)&_magic_number, sizeof(std::uint32_t));
@@ -121,6 +124,8 @@ void Message::serialize (char* buffer) {
   memcpy(buffer + buffer_offset, (void*)&_success, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
   memcpy(buffer + buffer_offset, (void*)&_request_semantic, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  memcpy(buffer + buffer_offset, (void*)&_monitor_interval_in_seconds, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
 
   memcpy(buffer + buffer_offset, (void*)&_amount, sizeof(float));
@@ -158,6 +163,8 @@ void Message::deserialize (char* buffer) {
   std::uint32_t _is_reply;
   std::uint32_t _success;
   std::uint32_t _request_semantic;
+  std::uint32_t _monitor_interval_in_seconds;
+
   float _amount;
   float _account_balance;
 
@@ -169,7 +176,7 @@ void Message::deserialize (char* buffer) {
   std::string _name; // max_length = 63 characters + null
   std::string _error_data; // max_length = 63 characters + null
   std::string _monitor_data; // max_length = 63 characters + null
-  std::string _password; // // max_length = 7 characters + null
+  std::string _password; // max_length = 7 characters + null
 
   _name.resize(MAX_NAME_SIZE);
   _error_data.resize(MAX_ERROR_DATA_SIZE);
@@ -192,6 +199,8 @@ void Message::deserialize (char* buffer) {
   memcpy(&_success, buffer + buffer_offset, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
   memcpy(&_request_semantic, buffer + buffer_offset, sizeof(std::uint32_t));
+  buffer_offset += sizeof(std::uint32_t);
+  memcpy(&_monitor_interval_in_seconds, buffer + buffer_offset, sizeof(std::uint32_t));
   buffer_offset += sizeof(std::uint32_t);
 
   memcpy(&_amount, buffer + buffer_offset, sizeof(float));
@@ -227,6 +236,7 @@ void Message::deserialize (char* buffer) {
   is_reply = ntohl(_is_reply);
   success = ntohl(_success);
   request_semantic = ntohl(_request_semantic);
+  monitor_interval_in_seconds = ntohl(_monitor_interval_in_seconds);
 
   amount = ntohf(_amount);
   account_balance = ntohf(_account_balance);

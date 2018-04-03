@@ -21,6 +21,7 @@
 #define DEFAULT_REQUEST_SEMANTIC 0
 #define DEFAULT_ERROR_DATA "0"
 #define DEFAULT_MONITOR_DATA "0"
+#define DEFAULT_MONITOR_INTERVAL_IN_SECONDS 0
 
 #define DEBUG 1
 
@@ -29,7 +30,7 @@
 #define MAX_MONITOR_DATA_SIZE 64
 #define PASSWORD_SIZE 8
 
-enum client_requests {INVALID_REQUEST=0, OPEN_ACC, CLOSE_ACC, DEPOSIT, WITHDRAW, TAKE_LOAN, CHECK_BALANCE};
+enum client_requests {INVALID_REQUEST=0, OPEN_ACC, CLOSE_ACC, DEPOSIT, WITHDRAW, TAKE_LOAN, CHECK_BALANCE, MONITOR};
 enum currency_types {INVALID_CURRENCY=0, SGD, USD, QAR};
 enum request_semantics {AT_MOST_ONCE=0, AT_LEAST_ONCE};
 
@@ -43,6 +44,8 @@ public:
     std::uint32_t is_reply;
     std::uint32_t success;
     std::uint32_t request_semantic;
+    std::uint32_t monitor_interval_in_seconds;
+
     float amount;
     float account_balance;
 
@@ -66,6 +69,7 @@ inline std::ostream& operator<<(std::ostream& os, const Message& message) {
     os << "is_reply: " << message.is_reply << " | ";
     os << "success: " << message.success << " | ";
     os << "request_semantic: " << message.request_semantic << " | ";
+    os << "monitor_interval_in_seconds: " << message.monitor_interval_in_seconds << " | ";
     os << "amount: " << message.amount << " | ";
     os << "account_balance: " << message.account_balance << " | ";
     os << "name: " << message.name << " | ";
