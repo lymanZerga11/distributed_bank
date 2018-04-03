@@ -24,11 +24,13 @@ udp_client::udp_client(const std::string& addr, int port)
         freeaddrinfo(f_addrinfo);
         throw udp_client_server_runtime_error(("could not create socket for: \"" + addr + ":" + decimal_port + "\"").c_str());
     }
+    
+    struct sockaddr_in  my_addr;
     memset((char *)&my_addr, 0, sizeof(my_addr));
     my_addr.sin_family = AF_INET;
-    my_addr.sin_addr.s_addr = hotnl(INADDR_ANY);
+    my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     my_addr.sin_port = htons(0);
-    r = bind(f_socket, (struct sockaddr *)&myaddr, sizeof(myaddr));
+    r = bind(f_socket, (struct sockaddr *)&my_addr, sizeof(my_addr));
     if(r != 0)
     {
         freeaddrinfo(f_addrinfo);
@@ -58,6 +60,11 @@ int udp_client::send(const char *msg, size_t size) {
     return sendto(f_socket, msg, size, 0, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen);
 }
 
+int udp_client::recv(char *msg, size_t max_size)
+{
+    return ::recv(f_socket, msg, max_size, 0);
+}
+
 int udp_client::timed_recv(char *msg, size_t max_size, int max_wait_ms) {
     fd_set s;
     FD_ZERO(&s);
@@ -72,7 +79,7 @@ int udp_client::timed_recv(char *msg, size_t max_size, int max_wait_ms) {
     }
     if(retval > 0) {
         // our socket has data
-        return udp_server::recv(msg, max_size);
+        return udp_client::recv(msg, max_size);
     }
     errno = EAGAIN;
     return -1;
@@ -81,7 +88,7 @@ int udp_client::timed_recv(char *msg, size_t max_size, int max_wait_ms) {
 int udp_client::get_bound_port () const {
     struct sockaddr_in sin;
     socklen_t len = sizeof(sin);
-    if (getsockname(client.get_socket(), (struct sockaddr *)&sin, &len) == -1)
+    if (getsockname(get_socket(), (struct sockaddr *)&sin, &len) == -1)
       perror("getsockname");
     return ntohs(sin.sin_port);
 }

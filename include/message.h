@@ -21,8 +21,8 @@
 #define MAX_NAME_SIZE 64
 #define PASSWORD_SIZE 8
 
-enum client_requests {INVALID=0, OPEN_ACC, CLOSE_ACC, DEPOSIT, WITHDRAW, TAKE_LOAN, CHECK_BALANCE};
-enum currency_types {INVALID=0, SGD, USD, QAR};
+enum client_requests {INVALID_REQUEST=0, OPEN_ACC, CLOSE_ACC, DEPOSIT, WITHDRAW, TAKE_LOAN, CHECK_BALANCE};
+enum currency_types {INVALID_CURRENCY=0, SGD, USD, QAR};
 
 class Message {
 public:
