@@ -1,7 +1,7 @@
 #ifndef UDP_SERVER_H
 #define UDP_SERVER_H
 
-#define SIMULATE_REPLY_LOSS 1
+#define SIMULATE_REPLY_LOSS 0
 
 #include <sys/types.h>
 #include <sys/socket.h>

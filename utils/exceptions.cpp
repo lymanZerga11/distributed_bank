@@ -9,9 +9,12 @@ class MaxAttemptsError: public std::exception
 };
 
 class ServerSideError: public std::exception
-{
+{ 
+  std::string error_data;
+  public:
+  ServerSideError (std::string _error_data) : error_data(_error_data) {}
   const char * what () const throw () {
-      return "ServerSideError";
+      return error_data.c_str();
    }
 };
 
