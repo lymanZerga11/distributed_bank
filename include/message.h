@@ -20,11 +20,13 @@
 #define DEFAULT_SUCCESS 2
 #define DEFAULT_REQUEST_SEMANTIC 0
 #define DEFAULT_ERROR_DATA "0"
+#define DEFAULT_MONITOR_DATA "0"
 
 #define DEBUG 1
 
 #define MAX_NAME_SIZE 64
 #define MAX_ERROR_DATA_SIZE 64
+#define MAX_MONITOR_DATA_SIZE 64
 #define PASSWORD_SIZE 8
 
 enum client_requests {INVALID_REQUEST=0, OPEN_ACC, CLOSE_ACC, DEPOSIT, WITHDRAW, TAKE_LOAN, CHECK_BALANCE};
@@ -47,6 +49,7 @@ public:
     std::string name;  // max_length = 63 characters + null
     std::string password;  // max_length = 7 characters + null
     std::string error_data;  // max_length = 63 characters + null
+    std::string monitor_data; // max_length = 63 characters + null
 
     Message                 (uint64_t request_id);
     Message                 ();
@@ -63,14 +66,15 @@ inline std::ostream& operator<<(std::ostream& os, const Message& message) {
     os << "is_reply: " << message.is_reply << " | ";
     os << "success: " << message.success << " | ";
     os << "request_semantic: " << message.request_semantic << " | ";
-    os << "amount: " << message.amount << " | "; 
-    os << "account_balance: " << message.account_balance << " | "; 
-    os << "name: " << message.name << " | "; 
-    os << "password: " << message.password << " | "; 
-    os << "error_data: " << message.error_data; 
+    os << "amount: " << message.amount << " | ";
+    os << "account_balance: " << message.account_balance << " | ";
+    os << "name: " << message.name << " | ";
+    os << "password: " << message.password << " | ";
+    os << "error_data: " << message.error_data << " | ";
+    os << "monitor_data: " << message.monitor_data;
     return os;
 }
 
-// fix defaults 
+// fix defaults
 
 #endif
