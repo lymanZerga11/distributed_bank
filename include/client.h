@@ -10,6 +10,11 @@
 #include "../utils/log.cpp"
 #include "../utils/exceptions.cpp"
 
+#include <algorithm>
+#include <iostream>
+#include <random>
+#include <chrono>
+
 class Client{
     std::uint64_t client_id;  // client's ip_address and port HI 32 bits
     std::uint16_t log_level;
@@ -30,7 +35,7 @@ public:
     float withdraw_money          (std::string name, std::uint32_t account_number, std::string password, std::uint32_t currency_type, float amount);
     std::uint32_t take_loan       (std::string name, std::uint32_t account_number, std::string password);
     float check_balance           (std::string name, std::uint32_t account_number, std::string password);
-    void monitor                  (std::uint32_t );
+    void monitor                  (std::uint32_t monitor_interval_in_seconds);
 
     bool validate_request         (const Message & request_message);
     bool validate_response        (const Message & response_message);
@@ -39,5 +44,3 @@ public:
 };
 
 #endif
-
-// give exchange rates add deposit amount for first and monitor

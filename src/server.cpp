@@ -31,6 +31,8 @@ std::uint32_t Server::open_account (std::string name, std::string password, std:
   Account new_account (name, password, account_number, exchange(amount, currency_type));
   accounts[account_number] = new_account;
   log(INFO) << "Opened Account - " << new_account <<std::endl;
+  std::stringstream update; update << "Opened Account - " << new_account;
+  update_monitors (update.str());
   return account_number;
 }
 
@@ -38,6 +40,8 @@ std::uint32_t Server::close_account (std::string name, std::uint32_t account_num
   std::uint32_t success = 0;
   if (authenticate (name, account_number, password)) {
     log(INFO) << "Closing Account - " << accounts[account_number] << std::endl;
+    std::stringstream update; update << "Closing Account - " << accounts[account_number];
+    update_monitors (update.str());
     accounts.erase(account_number);
     success = 1;
   }
@@ -58,6 +62,8 @@ float Server::deposit_money (std::string name, std::uint32_t account_number, std
     throw AuthenticationFailed();
   }
   log(INFO) << "Deposit Money - " << accounts[account_number] << std::endl;
+  std::stringstream update; update << "Deposit Money - " << accounts[account_number];
+  update_monitors (update.str());
   return account_balance;
 }
 
@@ -72,6 +78,8 @@ float Server::withdraw_money (std::string name, std::uint32_t account_number, st
     throw AuthenticationFailed();
   }
   log(INFO) << "Withdraw Money - " << accounts[account_number] << std::endl;
+  std::stringstream update; update << "Withdraw Money - " << accounts[account_number];
+  update_monitors (update.str());
   return account_balance;
 }
 
@@ -85,6 +93,8 @@ std::uint32_t Server::take_loan (std::string name, std::uint32_t account_number,
     throw AuthenticationFailed();
   }
   log(INFO) << "Take Loan - " << accounts[account_number] << std::endl;
+  std::stringstream update; update << "Take Loan - " << accounts[account_number];
+  update_monitors (update.str());
   return success;
 }
 
@@ -97,6 +107,8 @@ float Server::check_balance (std::string name, std::uint32_t account_number, std
     throw AuthenticationFailed();
   }
   log(INFO) << "Check Balance - " << accounts[account_number] << std::endl;
+  std::stringstream update; update << "Check Balance - " << accounts[account_number];
+  update_monitors (update.str());
   return account_balance;
 }
 
@@ -153,6 +165,9 @@ void Server::process_messages () {
                 break;
               case MONITOR:
                 monitor_clients.push_back(monitor_client(client_address, client_address_length, request_message.request_id, request_message.monitor_interval_in_seconds));
+                log(INFO) << "Monitor Added - " << inet_ntoa(client_address.sin_addr) << ":" << ntohl(client_address.sin_port) << std::endl;
+                std::stringstream update; update << "Monitor Added - " << inet_ntoa(client_address.sin_addr) << ":" << ntohl(client_address.sin_port);
+                update_monitors (update.str());
                 break;
             }
           }

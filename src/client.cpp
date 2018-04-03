@@ -23,7 +23,7 @@ std::uint32_t Client::open_account (std::string name, std::string password, std:
   std::uint32_t account_number = DEFAULT_ACCOUNT_NUMBER;
   try {
     response_message = get_response(request_message);
-    account_number = response_message.account_number; 
+    account_number = response_message.account_number;
   }
   catch (InvalidInputError& e) {
     log(ERROR) << "Invalid input entered on request_id " << request_message.request_id << std::endl; }
@@ -32,7 +32,6 @@ std::uint32_t Client::open_account (std::string name, std::string password, std:
   catch (MaxAttemptsError& e) {
     log(ERROR) << "Maximum failed on request_id " << request_message.request_id << std::endl; }
   return account_number;
-  // if DEFAULT, dont print in console
 }
 
 std::uint32_t Client::close_account (std::string name, std::uint32_t account_number, std::string password) {
@@ -64,7 +63,7 @@ float Client::deposit_money (std::string name, std::uint32_t account_number, std
   request_message.password = password;
   request_message.currency_type = currency_type;
   request_message.amount = amount;
-  Message response_message; 
+  Message response_message;
   float account_balance = DEFAULT_ACCOUNT_BALANCE;
   try {
     response_message = get_response(request_message);
@@ -91,7 +90,7 @@ float Client::withdraw_money (std::string name, std::uint32_t account_number, st
   float account_balance = DEFAULT_ACCOUNT_BALANCE;
   try {
     response_message = get_response(request_message);
-    account_balance = response_message.account_balance; 
+    account_balance = response_message.account_balance;
   }
   catch (InvalidInputError& e) {
     log(ERROR) << "Invalid input entered on request_id " << request_message.request_id << std::endl; }
@@ -140,6 +139,29 @@ float Client::check_balance (std::string name, std::uint32_t account_number, std
   catch (MaxAttemptsError& e) {
     log(ERROR) << "Maximum failed on request_id " << request_message.request_id << std::endl; }
   return account_balance;
+}
+
+void Client::monitor (std::uint32_t monitor_interval_in_seconds) {
+  std::chrono::system_clock::time_point monitor_endpoint = std::chrono::system_clock::now() +
+                          std::chrono::seconds(monitor_interval_in_seconds);
+  Message request_message (client_id | (request_count++));
+  request_message.request_type = MONITOR;
+  request_message.monitor_interval_in_seconds = monitor_interval_in_seconds;
+  char request_packet[2 * PACKET_SIZE];
+  request_message.serialize(request_packet);
+  udp.send(request_packet, PACKET_SIZE);
+  while (monitor_endpoint > std::chrono::system_clock::now()) {
+    if (udp.timed_recv(response_packet, PACKET_SIZE, 10000) > 0) {
+      Message response_message (DEFAULT_REQUEST_ID);
+      response_message.deserialize(response_packet);
+      if (DEBUG) log(WARN) << response_message << std::endl;
+      if (validate_response(response_message) && request_message.request_id == response_message.request_id) {
+          if (response_message.error_data != DEFAULT_ERROR_DATA)
+            throw ServerSideError(response_message.error_data);
+          log(INFO) << response_message.monitor_data << std::endl;
+      }
+    }
+  }
 }
 
 bool Client::validate_request (const Message & request_message) {
